@@ -1,0 +1,61 @@
+<main class="home">
+  <div class="home__card">
+    <header class="home__header">
+      <h1 class="home__logo">Poser</h1>
+      <p class="home__tagline">Guess who asked it.</p>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Create or join a game">
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.tab--active]="mode === 'create'"
+        [attr.aria-selected]="mode === 'create'"
+        (click)="setMode('create')">
+        Create a game
+      </button>
+      <button
+        type="button"
+        role="tab"
+        class="tab"
+        [class.tab--active]="mode === 'join'"
+        [attr.aria-selected]="mode === 'join'"
+        (click)="setMode('join')">
+        Join a game
+      </button>
+    </div>
+
+    <form class="home__form" (ngSubmit)="continue()">
+      <label class="field">
+        <span class="field__label">Your name</span>
+        <input
+          type="text"
+          name="playerName"
+          [(ngModel)]="playerName"
+          placeholder="Enter your name"
+          autocomplete="name"
+          maxlength="24"
+          required>
+      </label>
+
+      <label class="field" *ngIf="mode === 'join'">
+        <span class="field__label">Game code</span>
+        <input
+          type="text"
+          name="gameCode"
+          [(ngModel)]="gameCode"
+          placeholder="e.g. 4KZP"
+          autocomplete="off"
+          maxlength="8"
+          class="field__code-input">
+      </label>
+
+      <p class="home__error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+      <button type="submit" class="btn-primary home__continue" [disabled]="!canContinue || isSubmitting">
+        {{ isSubmitting ? 'One moment...' : (mode === 'create' ? 'Start the game' : 'Join the game') }}
+      </button>
+    </form>
+  </div>
+</main>

@@ -1,0 +1,68 @@
+<main class="game" *ngIf="game; else loading">
+  <header class="game__header">
+    <h1 class="game__logo">Poser</h1>
+    <button type="button" class="game__code" (click)="copyCode()" title="Copy code">
+      <span class="game__code-label">Code</span>
+      <span class="game__code-value">{{ gameId }}</span>
+    </button>
+  </header>
+
+  <section class="stage">
+    <p class="stage__label">Current question</p>
+    <p class="stage__question" *ngIf="game.currentQuestion; else noQuestion">
+      {{ game.currentQuestion.questionText }}
+    </p>
+    <ng-template #noQuestion>
+      <p class="stage__empty">No question yet. {{ isCreator ? 'Pick one to get started.' : 'Waiting on the host to start.' }}</p>
+    </ng-template>
+    <p class="stage__asker" *ngIf="game.currentQuestion">
+      asked by {{ game.currentQuestion.questionAsker }}
+    </p>
+
+    <button
+      *ngIf="isCreator"
+      type="button"
+      class="btn-primary stage__next"
+      [disabled]="!hasAvailableQuestions || isAdvancing"
+      (click)="advanceQuestion()">
+      {{ isAdvancing ? 'Choosing...' : 'New question' }}
+    </button>
+    <p class="stage__hint" *ngIf="isCreator && !hasAvailableQuestions">
+      No questions waiting yet. Ask players to submit a few below.
+    </p>
+  </section>
+
+  <section class="ask">
+    <h2 class="ask__title">Ask a new question</h2>
+    <form class="ask__form" (ngSubmit)="submitQuestion()">
+      <textarea
+        name="newQuestionText"
+        [(ngModel)]="newQuestionText"
+        placeholder="Type a question for the group..."
+        rows="3"
+        maxlength="280"></textarea>
+      <button type="submit" class="btn-secondary" [disabled]="!newQuestionText.trim() || isSubmittingQuestion">
+        {{ isSubmittingQuestion ? 'Adding...' : 'Add question' }}
+      </button>
+      <p class="ask__confirmation" *ngIf="submitConfirmation">{{ submitConfirmation }}</p>
+    </form>
+  </section>
+
+  <section class="history" *ngIf="game.askedQuestions.length">
+    <h2 class="history__title">Already asked</h2>
+    <ul class="history__list">
+      <li class="history__item" *ngFor="let question of game.askedQuestions.slice().reverse()">
+        <p class="history__question">{{ question.questionText }}</p>
+        <p class="history__asker">{{ question.questionAsker }}</p>
+      </li>
+    </ul>
+  </section>
+
+  <p class="game__error" *ngIf="loadError">{{ loadError }}</p>
+</main>
+
+<ng-template #loading>
+  <main class="game-loading">
+    <p>Loading game...</p>
+  </main>
+</ng-template>
