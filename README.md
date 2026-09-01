@@ -37,13 +37,13 @@ interface Game {
 
 ## Backend contract expected by `DataService`
 
-| Method | Endpoint                          | Body                                  | Returns          |
-|--------|------------------------------------|----------------------------------------|-------------------|
-| POST   | `/games`                           | `{ creatorName }`                      | `{ gameId }`      |
-| GET    | `/games/:gameId`                   | —                                       | `Game`            |
-| POST   | `/games/:gameId/join`              | `{ name }`                             | `Game`            |
-| POST   | `/games/:gameId/questions`         | `{ questionAsker, questionText }`      | `Game`            |
-| POST   | `/games/:gameId/next`              | —                                       | `Game`            |
+| Method | Endpoint                          | Body                                      | Returns          |
+|--------|------------------------------------|----------------------------------------  |-------------------|
+| POST   | `/games`                           | `{ creatorName }`                        | `{ gameId }`      |
+| GET    | `/games/:gameId`                   | —                                        | `Game`            |
+| POST   | `/games/join`                      | `{ name, gameId }`                       | `Game`            |
+| POST   | `/games/add_question`              | `{ questionAsker, questionText, gameId }`| `Game`            |
+| POST   | `/games/next`                      | `{gameId}`                               | `Game`            |
 
 Notes for the backend implementation:
 - `createGame` should generate a short, easy-to-type `gameId` (e.g. 4-6

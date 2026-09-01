@@ -8,47 +8,42 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.route('/')
 def status_ping():
-    return 'Anime PowerScaler'
-
-@app.route('/login/<username>/<password>', methods=['GET'])
-def login(username, password):
-    return data_service.login(username, password)
-
-@app.route('/submit_battle', methods=['POST'])
-def submit_battle():
-    if request.method == 'POST':
-        battleObj = request.json
-        results = data_service.submit_battle(battleObj)
-        return results
+    return 'Poser App'
     
-@app.route('/get_rankings', methods=['POST'])
-def getRankings():
+@app.route('/games', methods=['POST'])
+def create_game():
     if request.method == 'POST':
-        rankingParams = request.json
-        results = data_service.get_rankings(rankingParams)
-        return results
-    
-@app.route('/get_battles_results', methods=['POST'])
-def getBattlesResults():
+            name = request.json['creatorName']
+            code = data_service.create_game(name)
+            return code
+
+@app.route('/games/<gameId>', methods=['GET'])
+def get_game(gameId):
+    return data_service.get_game(gameId)
+
+@app.route('/games/join', methods=['POST'])
+def join_game():
     if request.method == 'POST':
-        battleParams = request.json
-        results = data_service.get_battles_results(battleParams)
-        return results
-    
-@app.route('/get_battles/<type>/<count>', methods=['GET'])
-def get_battles(type, count):
-    if type == 'top':
-        return data_service.get_top_10_battles(count)
-    elif type == 'random':
-        return data_service.get_5_random_battles(count)
+            name = request.json['name']
+            gameId = request.json['gameId']
+            game = data_service.join_game(name, gameId)
+            return game
 
-@app.route('/scrape_character/<id>/', methods=['GET'])
-def scrape_character(id):
-    return data_service.scrape_character(id)
+@app.route('/games/add_question', methods=['POST'])
+def add_question():
+    if request.method == 'POST':
+            questionAsker = request.json['questionAsker']
+            questionText = request.json['questionText']
+            gameId = request.json['gameId']
+            game = data_service.add_question(questionAsker, questionText, gameId)
+            return game
 
-@app.route('/get_animes_list', methods=['GET'])
-def get_animes_list():
-    return data_service.get_animes_list()
+@app.route('/games/next', methods=['POST'])
+def next_question():
+    if request.method == 'POST':
+            gameId = request.json['gameId']
+            game = data_service.next_question(gameId)
+            return game
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))

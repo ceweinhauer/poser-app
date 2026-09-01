@@ -4,16 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Game } from '../models/game.model';
 
-/**
- * All game state lives on the backend (Python + MongoDB). This service is a
- * thin HTTP wrapper around that API. Expected REST contract:
- *
- *   POST   /games                body: { creatorName }            -> { gameId }
- *   GET    /games/:gameId                                          -> Game
- *   POST   /games/:gameId/join    body: { name }                   -> Game
- *   POST   /games/:gameId/questions body: { questionAsker, questionText } -> Game
- *   POST   /games/:gameId/next                                     -> Game
- */
+
 @Injectable({
   providedIn: 'root'
 })
@@ -35,9 +26,10 @@ export class DataService {
    * that game's newQuestions list.
    */
   submitQuestion(gameId: string, questionAsker: string, questionText: string): Observable<Game> {
-    return this.http.post<Game>(`${this.baseUrl}/games/${gameId}/questions`, {
+    return this.http.post<Game>(`${this.baseUrl}/games/questions`, {
       questionAsker,
-      questionText
+      questionText,
+      gameId
     });
   }
 
@@ -46,14 +38,16 @@ export class DataService {
    * a question from newQuestions to be the new currentQuestion.
    */
   nextQuestion(gameId: string): Observable<Game> {
-    return this.http.post<Game>(`${this.baseUrl}/games/${gameId}/next`, {});
+    return this.http.post<Game>(`${this.baseUrl}/games/next`, {
+      gameId
+    });
   }
 
   /**
    * Validates a game code exists and registers the joining player.
    */
   joinGame(gameId: string, name: string): Observable<Game> {
-    return this.http.post<Game>(`${this.baseUrl}/games/${gameId}/join`, { name });
+    return this.http.post<Game>(`${this.baseUrl}/games/join`, { name, gameId });
   }
 
   /**
