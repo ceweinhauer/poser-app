@@ -6,4 +6,5 @@ export interface Game {
   currentQuestion: Question | null;
   askedQuestions: Question[];
   newQuestions: Question[];
+  players: string[];
 }

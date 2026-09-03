@@ -2,6 +2,7 @@ import json
 import mongo_service
 import random
 import string
+from bson import json_util
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -14,16 +15,20 @@ def generate_alphanumeric(length=6):
     return ''.join(random.choices(characters, k=length))
 
 def create_game(name):
-    code = generate_alphanumeric()
+    code = generate_alphanumeric().upper()
+    players = []
+    players.append(name)
     gameObj = {
         'gameId': code,
         'creator': name,
         'currentQuestion': None,
         'askedQuestions': [],
-        'newQuestions': []
+        'newQuestions': [],
+        'players': players
     }
     mongo_service.insertIntoCollection("games", gameObj)
-    return code
+    jsonValue = {'gameId': code}
+    return parse_json(jsonValue)
 
 def get_game(gameId):
     query = {'gameId': gameId}
@@ -31,7 +36,13 @@ def get_game(gameId):
     return parse_json(game)
 
 def join_game(name, gameId):
-    return get_game(gameId)
+    game = get_game(gameId)
+    players = game['players']
+    players.append(name)
+    game['players'] = players
+    query = {'gameId': gameId}
+    mongo_service.updateOne("games", game, query)
+    return parse_json(game)
 
 def add_question(questionAsker, questionText, gameId):
     query = {'gameId': gameId}
@@ -39,10 +50,15 @@ def add_question(questionAsker, questionText, gameId):
     newQuestions = game['newQuestions']
     question = {
         'questionAsker': questionAsker,
-        'questionText': questionText
+        'questionText': questionText,
+        'upvotes': 0,
+        'downvotes': 0
     }
-    newQuestions.append(question)
-    game['newQuestions'] = newQuestions
+    if (game['currentQuestion'] == None):
+        game['currentQuestion'] = question
+    else:
+        newQuestions.append(question)
+        game['newQuestions'] = newQuestions
     mongo_service.updateOne("games", game, query)
     return parse_json(game)
 
@@ -60,4 +76,20 @@ def next_question(gameId):
     game['newQuestions'] = newQuestions
     mongo_service.updateOne("games", game, query)
     return parse_json(game)
+
+def vote_question(gameId, vote):
+    query = {'gameId': gameId}
+    game = mongo_service.findOneFromCollection("games", query)
+    currentQuestion = game['currentQuestion']
+    if (vote == 'up'):
+        vote = currentQuestion['upvotes']
+        vote = vote + 1
+        currentQuestion['upvotes'] = vote
+    else:
+        vote = currentQuestion['downvotes']
+        vote = vote + 1
+        currentQuestion['downvotes'] = vote
+    game['currentQuestion'] = currentQuestion
+    mongo_service.updateOne("games", game, query)
+    return game
 

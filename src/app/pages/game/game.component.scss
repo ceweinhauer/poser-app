@@ -23,9 +23,27 @@
   padding-top: 0.5rem;
 }
 
+.game__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.game__logo-mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+}
+
 .game__logo {
   font-size: 1.6rem;
   color: var(--color-accent);
+}
+
+.game__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .game__code {
@@ -39,6 +57,22 @@
   min-height: 2.5rem;
 }
 
+.game__share {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.9rem;
+  min-height: 2.5rem;
+  font-size: 0.9rem;
+}
+
+.game__share-status {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  text-align: right;
+  margin-top: -0.75rem;
+}
+
 .game__code-label {
   color: var(--color-text-muted);
   font-size: 0.75rem;
@@ -47,6 +81,127 @@
 .game__code-value {
   font-weight: 600;
   letter-spacing: 0.08em;
+}
+
+.game__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.game__score {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.reveal {
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.reveal__verdict {
+  font-weight: 700;
+  color: var(--color-danger);
+}
+
+.reveal__verdict--correct {
+  color: var(--color-success);
+}
+
+.reveal__detail {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.votes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.votes__note {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.votes__btn {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.4rem 0.9rem;
+  min-height: 2.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.votes__arrow {
+  font-size: 0.7rem;
+}
+
+.votes__arrow--up {
+  color: var(--color-success);
+}
+
+.votes__arrow--down {
+  color: var(--color-danger);
+}
+
+.guess {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.guess__label {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.guess__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.guess__select {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 0.9rem;
+  min-height: var(--tap-target);
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.guess__locked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.guess__own {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
 }
 
 .stage {
@@ -150,6 +305,11 @@
 .history__asker {
   color: var(--color-text-muted);
   font-size: 0.8rem;
+}
+
+.history__votes {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
 }
 
 .game__error {

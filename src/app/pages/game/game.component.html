@@ -1,11 +1,38 @@
 <main class="game" *ngIf="game; else loading">
   <header class="game__header">
-    <h1 class="game__logo">Poser</h1>
-    <button type="button" class="game__code" (click)="copyCode()" title="Copy code">
-      <span class="game__code-label">Code</span>
-      <span class="game__code-value">{{ gameId }}</span>
-    </button>
+    <div class="game__brand">
+      <img class="game__logo-mark" src="assets/logo.png" alt="Dish logo">
+      <h1 class="game__logo">Dish</h1>
+    </div>
+    <div class="game__actions">
+      <button type="button" class="game__code" (click)="copyCode()" title="Copy code">
+        <span class="game__code-label">Code</span>
+        <span class="game__code-value">{{ gameId }}</span>
+      </button>
+      <button type="button" class="game__share" (click)="shareGame()" aria-label="Share game invite">
+        Share
+      </button>
+    </div>
   </header>
+
+  <p class="game__share-status" *ngIf="shareStatus">{{ shareStatus }}</p>
+
+  <div class="game__meta">
+    <span class="game__score">Score: {{ score }}</span>
+    <span class="game__players" *ngIf="game.players?.length">
+      {{ game.players.length }} player{{ game.players.length === 1 ? '' : 's' }}
+    </span>
+  </div>
+
+  <section class="reveal" *ngIf="lastResult">
+    <p class="reveal__verdict" [class.reveal__verdict--correct]="lastResult.correct">
+      {{ lastResult.correct ? 'Correct!' : 'Not quite.' }}
+    </p>
+    <p class="reveal__detail">
+      "{{ lastResult.questionText }}" was asked by <strong>{{ lastResult.actualAsker }}</strong>.
+      <span *ngIf="!lastResult.correct">You guessed {{ lastResult.guessedAsker }}.</span>
+    </p>
+  </section>
 
   <section class="stage">
     <p class="stage__label">Current question</p>
@@ -15,8 +42,43 @@
     <ng-template #noQuestion>
       <p class="stage__empty">No question yet. {{ isCreator ? 'Pick one to get started.' : 'Waiting on the host to start.' }}</p>
     </ng-template>
-    <p class="stage__asker" *ngIf="game.currentQuestion">
-      asked by {{ game.currentQuestion.questionAsker }}
+
+    <div class="votes" *ngIf="game.currentQuestion">
+      <button type="button" class="votes__btn" (click)="vote('up')" [disabled]="isVoting || hasVotedOnCurrentQuestion" aria-label="Upvote this question">
+        <span class="votes__arrow votes__arrow--up">▲</span>
+        <span>{{ game.currentQuestion.upvotes }}</span>
+      </button>
+      <button type="button" class="votes__btn" (click)="vote('down')" [disabled]="isVoting || hasVotedOnCurrentQuestion" aria-label="Downvote this question">
+        <span class="votes__arrow votes__arrow--down">▼</span>
+        <span>{{ game.currentQuestion.downvotes }}</span>
+      </button>
+      <span class="votes__note" *ngIf="hasVotedOnCurrentQuestion">Vote locked in until the next question.</span>
+    </div>
+
+    <div class="guess" *ngIf="game.currentQuestion && !isOwnQuestion">
+      <p class="guess__label">Who asked this?</p>
+
+      <ng-container *ngIf="!guessLocked; else lockedView">
+        <div class="guess__controls">
+          <select class="guess__select" [(ngModel)]="myGuess" [disabled]="!guessableUsers.length">
+            <option value="" disabled>Select a player</option>
+            <option *ngFor="let player of guessableUsers" [value]="player">{{ player }}</option>
+          </select>
+          <button type="button" class="btn-primary guess__lock" [disabled]="!myGuess" (click)="lockInGuess()">
+            Lock in guess
+          </button>
+        </div>
+      </ng-container>
+      <ng-template #lockedView>
+        <div class="guess__locked">
+          <p>Your guess: <strong>{{ myGuess }}</strong> — waiting on the reveal.</p>
+          <button type="button" class="btn-text" (click)="changeGuess()">Change guess</button>
+        </div>
+      </ng-template>
+    </div>
+
+    <p class="guess__own" *ngIf="game.currentQuestion && isOwnQuestion">
+      You asked this one — sit back and watch everyone guess.
     </p>
 
     <button
@@ -51,9 +113,10 @@
   <section class="history" *ngIf="game.askedQuestions.length">
     <h2 class="history__title">Already asked</h2>
     <ul class="history__list">
-      <li class="history__item" *ngFor="let question of game.askedQuestions.slice().reverse()">
+      <li class="history__item" *ngFor="let question of game.askedQuestions.slice().reverse(); trackBy: trackByQuestionText">
         <p class="history__question">{{ question.questionText }}</p>
         <p class="history__asker">{{ question.questionAsker }}</p>
+        <p class="history__votes">+{{ question.upvotes }} / -{{ question.downvotes }}</p>
       </li>
     </ul>
   </section>

@@ -38,6 +38,14 @@ def add_question():
             game = data_service.add_question(questionAsker, questionText, gameId)
             return game
 
+@app.route('/games/vote', methods=['POST'])
+def vote():
+    if request.method == 'POST':
+            gameId = request.json['gameId']
+            vote = request.json['vote']
+            game = data_service.vote_question(gameId, vote)
+            return game
+
 @app.route('/games/next', methods=['POST'])
 def next_question():
     if request.method == 'POST':
