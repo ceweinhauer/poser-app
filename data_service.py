@@ -36,7 +36,8 @@ def get_game(gameId):
     return parse_json(game)
 
 def join_game(name, gameId):
-    game = get_game(gameId)
+    gameIdUpper = str(gameId).upper()
+    game = get_game(gameIdUpper)
     players = game['players']
     players.append(name)
     game['players'] = players
