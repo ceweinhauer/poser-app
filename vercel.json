@@ -1,6 +1,6 @@
 {
   "buildCommand": "ng build",
-  "outputDirectory": "dist/poser-app/browser",
+  "outputDirectory": "dist/poser-app",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
