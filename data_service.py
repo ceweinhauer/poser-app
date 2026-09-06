@@ -53,13 +53,29 @@ def add_question(questionAsker, questionText, gameId):
         'questionAsker': questionAsker,
         'questionText': questionText,
         'upvotes': 0,
-        'downvotes': 0
+        'downvotes': 0,
+        'answers': []
     }
     if (game['currentQuestion'] == None):
         game['currentQuestion'] = question
     else:
         newQuestions.append(question)
         game['newQuestions'] = newQuestions
+    mongo_service.updateOne("games", game, query)
+    return parse_json(game)
+
+def add_answer(answerName, answerText, gameId):
+    query = {'gameId': gameId}
+    game = mongo_service.findOneFromCollection("games", query)
+    currentQuestion = game['currentQuestion']
+    answer = {
+        'answerName': answerName,
+        'answerText': answerText,
+        'upvotes': 0,
+        'downvotes': 0
+    }
+    currentQuestion['answers'].append(answer)
+    game['currentQuestion'] = currentQuestion
     mongo_service.updateOne("games", game, query)
     return parse_json(game)
 
@@ -94,3 +110,20 @@ def vote_question(gameId, vote):
     mongo_service.updateOne("games", game, query)
     return game
 
+def vote_answer(gameId, vote, name):
+    query = {'gameId': gameId}
+    game = mongo_service.findOneFromCollection("games", query)
+    currentQuestion = game['currentQuestion']
+    for answer in currentQuestion['answers']:
+        if answer['answerName'] == name:
+            if (vote == 'up'):
+                vote = answer['upvotes']
+                vote = vote + 1
+                answer['upvotes'] = vote
+            else:
+                vote = answer['downvotes']
+                vote = vote + 1
+                answer['downvotes'] = vote
+    game['currentQuestion'] = currentQuestion
+    mongo_service.updateOne("games", game, query)
+    return game

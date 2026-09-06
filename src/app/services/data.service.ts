@@ -8,19 +8,21 @@ import { Game } from '../models/game.model';
  * All game state lives on the backend (Python + MongoDB). This service is a
  * thin HTTP wrapper around that API. Expected REST contract:
  *
- *   POST   /games                         body: { creatorName }                    -> { gameId }
+ *   POST   /games                          body: { creatorName }                     -> { gameId }
  *   GET    /games/:gameId                                                            -> Game
  *   POST   /games/:gameId/join             body: { name }                            -> Game
  *   POST   /games/:gameId/questions        body: { questionAsker, questionText }     -> Game
  *   POST   /games/:gameId/next                                                       -> Game
- *   POST   /games/:gameId/vote             body: { direction: 'up' | 'down' }        -> Game
+ *   POST   /games/:gameId/vote/question            body: { direction: 'up' | 'down' }        -> Game
+ *   POST   /games/:gameId/answers          body: { answerName, answerText }          -> Game
++*   POST   /games/:gameId/vote/answer      body: { answerName, answerText, direction: 'up' | 'down' } -> Game
  */
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
-  //private readonly baseUrl = 'http://127.0.0.1:5000';
-  private readonly baseUrl = 'https://dish-app-pc1z.onrender.com'
+  private readonly baseUrl = 'http://127.0.0.1:5000';
+  //private readonly baseUrl = 'https://dish-app-pc1z.onrender.com'
 
   constructor(private http: HttpClient) {}
 
@@ -71,6 +73,34 @@ export class DataService {
    * Casts an up or down vote on the current question.
    */
   voteQuestion(gameId: string, vote: 'up' | 'down'): Observable<Game> {
-    return this.http.post<Game>(`${this.baseUrl}/games/vote`, { vote, gameId });
+    return this.http.post<Game>(`${this.baseUrl}/games/vote/question`, { vote, gameId });
+  }
+
+  /**
+   * Submits an answer to the current question. The backend appends it to
+   * that question's answers list.
+   */
+  answerQuestion(gameId: string, answerName: string, answerText: string): Observable<Game> {
+    return this.http.post<Game>(`${this.baseUrl}/games/add_answer`, {
+      answerName,
+      answerText,
+      gameId
+    });
+  }
+
+  /**
+  * Casts an up or down vote on a specific answer to the current question.
+   */
+  voteAnswer(
+    gameId: string,
+    answerName: string,
+    answerText: string,
+    vote: 'up' | 'down'
+  ): Observable<Game> {
+    return this.http.post<Game>(`${this.baseUrl}/games/vote/answer`, {
+      answerName,
+      vote,
+      gameId
+    });
   }
 }

@@ -6,6 +6,7 @@ import { DataService } from '../../services/data.service';
 import { SessionService } from '../../services/session.service';
 import { Game } from '../../models/game.model';
 import { Question } from '../../models/question.model';
+import { Answer } from '../../models/answer.model';
 
 const POLL_INTERVAL_MS = 4000;
 
@@ -39,6 +40,12 @@ export class GameComponent implements OnInit, OnDestroy {
   hasVotedOnCurrentQuestion = false;
 
   shareStatus = '';
+
+  newAnswerText = '';
+  isSubmittingAnswer = false;
+  answerSubmitConfirmation = '';
+  votingAnswerKey: string | null = null;
+  votedAnswerKeys = new Set<string>();
 
   // --- Guessing state (who asked the current question) ---
   myGuess = '';
@@ -118,6 +125,9 @@ export class GameComponent implements OnInit, OnDestroy {
       this.myGuess = '';
       this.guessLocked = false;
       this.hasVotedOnCurrentQuestion = false;
+      this.newAnswerText = '';
+      this.answerSubmitConfirmation = '';
+      this.votedAnswerKeys.clear();
     }
 
     this.game = game;
@@ -135,6 +145,11 @@ export class GameComponent implements OnInit, OnDestroy {
   /** True when the logged-in player is the one who asked the current question. */
   get isOwnQuestion(): boolean {
     return !!this.game?.currentQuestion && this.game.currentQuestion.questionAsker === this.playerName;
+  }
+
+  /** True once the current player has already submitted an answer to the current question. */
+  get hasAnsweredCurrentQuestion(): boolean {
+    return !!this.game?.currentQuestion?.answers?.some((a) => a.answerName === this.playerName);
   }
 
   get hasAvailableQuestions(): boolean {
@@ -207,6 +222,60 @@ export class GameComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  submitAnswer(): void {
+    const text = this.newAnswerText.trim();
+    if (!text || this.isSubmittingAnswer || !this.game?.currentQuestion || this.hasAnsweredCurrentQuestion) {
+      return;
+    }
+    this.isSubmittingAnswer = true;
+    this.answerSubmitConfirmation = '';
+
+    this.dataService.answerQuestion(this.gameId, this.playerName, text).subscribe({
+      next: (game) => {
+        this.applyGameUpdate(game);
+        this.newAnswerText = '';
+        this.isSubmittingAnswer = false;
+        this.answerSubmitConfirmation = 'Answer submitted.';
+      },
+      error: () => {
+        this.isSubmittingAnswer = false;
+        this.answerSubmitConfirmation = "Couldn't submit that answer. Try again.";
+      }
+    });
+  }
+
+  isOwnAnswer(answer: Answer): boolean {
+    return answer.answerName === this.playerName;
+  }
+
+  hasVotedOnAnswer(answer: Answer): boolean {
+    return this.votedAnswerKeys.has(this.answerKey(answer));
+  }
+
+  voteAnswer(answer: Answer, direction: 'up' | 'down'): void {
+    const key = this.answerKey(answer);
+    if (this.votingAnswerKey === key || this.isOwnAnswer(answer) || this.votedAnswerKeys.has(key)) {
+      return;
+    }
+    this.votingAnswerKey = key;
+    this.dataService.voteAnswer(this.gameId, answer.answerName, answer.answerText, direction).subscribe({
+      next: (game) => {
+        this.applyGameUpdate(game);
+        this.votedAnswerKeys.add(key);
+        this.votingAnswerKey = null;
+      },
+      error: () => {
+        this.votingAnswerKey = null;
+      }
+    });
+  }
+
+  answerKey(answer: Answer): string {
+    return `${answer.answerName}::${answer.answerText}`;
+  }
+
+  trackByAnswerKey = (_index: number, answer: Answer): string => this.answerKey(answer);
 
   trackByQuestionText(_index: number, question: Question): string {
     return question.questionText;

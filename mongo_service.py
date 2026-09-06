@@ -12,9 +12,9 @@ def getMongoDatabase():
     #db_username = os.environ['db_username'] 
     #db_password = os.environ['db_password']
     #uri = "mongodb+srv://" + db_username + ":" + db_password + "@anime-powerscale.gxqyxw1.mongodb.net/?authSource=admin"
-    uri = os.environ['mongo_uri']
-    client = MongoClient(uri, server_api=ServerApi('1'))
-    #client = MongoClient("localhost", 27017)
+    #uri = os.environ['mongo_uri']
+    #client = MongoClient(uri, server_api=ServerApi('1'))
+    client = MongoClient("localhost", 27017)
     database = client["Dish"]
 
     return database

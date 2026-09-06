@@ -94,6 +94,61 @@
     </p>
   </section>
 
+  <section class="answers" *ngIf="game.currentQuestion">
+    <h2 class="answers__title">Answers</h2>
+
+    <form class="answers__form" *ngIf="!hasAnsweredCurrentQuestion; else alreadyAnswered" (ngSubmit)="submitAnswer()">
+      <textarea
+        name="newAnswerText"
+        [(ngModel)]="newAnswerText"
+        placeholder="Answer this question..."
+        rows="2"
+        maxlength="280"></textarea>
+      <button type="submit" class="btn-secondary" [disabled]="!newAnswerText.trim() || isSubmittingAnswer">
+        {{ isSubmittingAnswer ? 'Adding...' : 'Submit answer' }}
+      </button>
+      <p class="answers__confirmation" *ngIf="answerSubmitConfirmation">{{ answerSubmitConfirmation }}</p>
+    </form>
+    <ng-template #alreadyAnswered>
+      <p class="answers__already">You've already answered this one.</p>
+    </ng-template>
+
+    <ul class="answers__list" *ngIf="game.currentQuestion.answers?.length; else noAnswers">
+      <li class="answers__item" *ngFor="let answer of game.currentQuestion.answers; trackBy: trackByAnswerKey">
+        <p class="answers__text">{{ answer.answerText }}</p>
+        <div class="answers__meta">
+          <span class="answers__name">{{ answer.answerName }}</span>
+
+          <span class="answers__own-tag" *ngIf="isOwnAnswer(answer)">Your answer</span>
+
+          <div class="answers__votes" *ngIf="!isOwnAnswer(answer)">
+            <button
+              type="button"
+              class="answers__vote-btn"
+              (click)="voteAnswer(answer, 'up')"
+              [disabled]="votingAnswerKey === answerKey(answer) || hasVotedOnAnswer(answer)"
+              aria-label="Upvote this answer">
+              <span class="votes__arrow votes__arrow--up">▲</span>
+              <span>{{ answer.upvotes }}</span>
+            </button>
+            <button
+              type="button"
+              class="answers__vote-btn"
+              (click)="voteAnswer(answer, 'down')"
+              [disabled]="votingAnswerKey === answerKey(answer) || hasVotedOnAnswer(answer)"
+              aria-label="Downvote this answer">
+              <span class="votes__arrow votes__arrow--down">▼</span>
+              <span>{{ answer.downvotes }}</span>
+            </button>
+          </div>
+        </div>
+      </li>
+    </ul>
+    <ng-template #noAnswers>
+      <p class="answers__empty">No answers yet — be the first.</p>
+    </ng-template>
+  </section>
+
   <section class="ask">
     <h2 class="ask__title">Ask a new question</h2>
     <form class="ask__form" (ngSubmit)="submitQuestion()">

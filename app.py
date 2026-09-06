@@ -38,12 +38,30 @@ def add_question():
             game = data_service.add_question(questionAsker, questionText, gameId)
             return game
 
-@app.route('/games/vote', methods=['POST'])
-def vote():
+@app.route('/games/add_answer', methods=['POST'])
+def add_answer():
+    if request.method == 'POST':
+            answerName = request.json['answerName']
+            answerText = request.json['answerText']
+            gameId = request.json['gameId']
+            game = data_service.add_answer(answerName, answerText, gameId)
+            return game
+
+@app.route('/games/vote/question', methods=['POST'])
+def vote_question():
     if request.method == 'POST':
             gameId = request.json['gameId']
             vote = request.json['vote']
             game = data_service.vote_question(gameId, vote)
+            return game
+
+@app.route('/games/vote/answer', methods=['POST'])
+def vote_answer():
+    if request.method == 'POST':
+            gameId = request.json['gameId']
+            vote = request.json['vote']
+            name = request.json['answerName']
+            game = data_service.vote_answer(gameId, vote, name)
             return game
 
 @app.route('/games/next', methods=['POST'])

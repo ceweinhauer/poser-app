@@ -22,11 +22,19 @@ for local dev, `/api` in production — update these to match your backend).
 ## Data model
 
 ```ts
+interface Answer {
+  answerText: string;
+  answerName: string;
+  upvotes: number;
+  downvotes: number;
+}
+
 interface Question {
   questionText: string;
   questionAsker: string;
   upvotes: number;
   downvotes: number;
+  answers: Answer[];
 }
 
 interface Game {
@@ -49,6 +57,8 @@ interface Game {
 | POST   | `/games/:gameId/questions`         | `{ questionAsker, questionText }`      | `Game`            |
 | POST   | `/games/:gameId/next`              | —                                       | `Game`            |
 | POST   | `/games/:gameId/vote`              | `{ direction: 'up' \| 'down' }`        | `Game`            |
+| POST   | `/games/:gameId/answers`           | `{ answerName, answerText }`           | `Game`            |
+| POST   | `/games/:gameId/answers/vote`      | `{ answerName, answerText, direction: 'up' \| 'down' }` | `Game` |
 
 Notes for the backend implementation:
 - `createGame` should generate a short, easy-to-type `gameId` (e.g. 4-6
@@ -58,8 +68,8 @@ Notes for the backend implementation:
 - `join` should confirm the `gameId` exists (404 if not), and append `name`
   to that game's `players` list if it isn't already present.
 - `submitQuestion` appends `{ questionText, questionAsker, upvotes: 0,
-  downvotes: 0 }` to that game's `newQuestions` array and returns the
-  updated game.
+  downvotes: 0, answers: [] }` to that game's `newQuestions` array and
+  returns the updated game.
 - `nextQuestion` should push the current `currentQuestion` onto
   `askedQuestions` (if one exists), pick a random entry out of
   `newQuestions`, remove it from that list, and set it as the new
@@ -68,6 +78,12 @@ Notes for the backend implementation:
   currently `currentQuestion` and return the updated game. (No dedupe/one
   vote per player logic is enforced here — add that server-side if you want
   it.)
+- `answers` (submit) should append `{ answerText, answerName, upvotes: 0,
+  downvotes: 0 }` to the current question's `answers` array and return the
+  updated game. Any player, including whoever asked the question, can
+  submit one.
+- `answers/vote` should find the matching answer on the current question by
+  `answerName` + `answerText` and increment its `upvotes` or `downvotes`.
 
 The frontend polls `GET /games/:gameId` every 4 seconds while on the game
 screen so all players stay roughly in sync without needing websockets.
