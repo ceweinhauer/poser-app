@@ -21,8 +21,8 @@ import { Game } from '../models/game.model';
   providedIn: 'root'
 })
 export class DataService {
-  private readonly baseUrl = 'http://127.0.0.1:5000';
-  //private readonly baseUrl = 'https://dish-app-pc1z.onrender.com'
+  //private readonly baseUrl = 'http://127.0.0.1:5000';
+  private readonly baseUrl = 'https://dish-app-pc1z.onrender.com'
 
   constructor(private http: HttpClient) {}
 
