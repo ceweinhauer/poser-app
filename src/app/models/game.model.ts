@@ -1,4 +1,6 @@
+import { Guess } from './guess.model';
 import { Question } from './question.model';
+import { Score } from './score.model';
 
 export interface Game {
   gameId: string;
@@ -7,4 +9,6 @@ export interface Game {
   askedQuestions: Question[];
   newQuestions: Question[];
   players: string[];
+  scores: Score[];
+  guesses: Guess[];
 }

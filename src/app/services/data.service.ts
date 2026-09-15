@@ -103,4 +103,12 @@ export class DataService {
       gameId
     });
   }
+
+  addGuess(gameId: string, playerName: string, myGuess: string): Observable<Game>{
+    return this.http.post<Game>(`${this.baseUrl}/games/guess`, {
+      'guessName': myGuess,
+      'userName': playerName,
+      'gameId': gameId
+    });
+  }
 }

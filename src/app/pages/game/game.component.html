@@ -18,10 +18,34 @@
   <p class="game__share-status" *ngIf="shareStatus">{{ shareStatus }}</p>
 
   <div class="game__meta">
-    <span class="game__score">Score: {{ score }}</span>
+    <button type="button" class="leaderboard-btn" (click)="toggleLeaderboard()">
+      Leaderboard
+    </button>
     <span class="game__players" *ngIf="game.players?.length">
       {{ game.players.length }} player{{ game.players.length === 1 ? '' : 's' }}
     </span>
+  </div>
+
+  <div class="leaderboard-overlay" *ngIf="showLeaderboard" (click)="closeLeaderboard()">
+    <div class="leaderboard-modal" (click)="$event.stopPropagation()">
+      <div class="leaderboard-modal__header">
+        <h2>Leaderboard</h2>
+        <button type="button" class="leaderboard-modal__close" (click)="closeLeaderboard()" aria-label="Close leaderboard">
+          &times;
+        </button>
+      </div>
+
+      <ol class="leaderboard-list" *ngIf="sortedScores.length; else noScores">
+        <li class="leaderboard-list__item" *ngFor="let entry of sortedScores; let i = index">
+          <span class="leaderboard-list__rank">{{ i + 1 }}</span>
+          <span class="leaderboard-list__name">{{ entry.name }}</span>
+          <span class="leaderboard-list__score">{{ entry.score }}</span>
+        </li>
+      </ol>
+      <ng-template #noScores>
+        <p class="leaderboard-empty">No scores yet - they'll show up once a round finishes.</p>
+      </ng-template>
+    </div>
   </div>
 
   <section class="reveal" *ngIf="lastResult">

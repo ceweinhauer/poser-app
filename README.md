@@ -103,14 +103,30 @@ time, but the UI deliberately never renders it while the question is
 into `askedQuestions`.
 
 While a question is live, each player (other than whoever asked it) picks a
-name from a dropdown of `players` and locks it in. Scoring is entirely
-client-side and per-browser: when the creator advances to the next question,
-the frontend compares the locked-in guess against the outgoing question's
-real `questionAsker` and increments a running score (persisted in
-`localStorage`, alongside the player's name/role for that game) if correct.
-There's no server-side leaderboard — if you want guesses/scores visible to
-everyone (not just the guesser), that'll need a new backend endpoint to
-submit and broadcast them.
+name from a dropdown of `players` and locks it in — the "Correct! / Not
+quite." banner that appears once the creator advances to the next question
+is purely a personal reveal (it compares the locked guess to that outgoing
+question's `questionAsker`) and does not compute score itself.
+
+Scoring is backend-authoritative: `Game.scores` (`{ name, score }[]`) and
+`Game.guesses` (`{ guesserName, guessedName }[]`) live on the `Game` model,
+and `nextQuestion` is expected to tally scores there. The **Leaderboard**
+button next to the game code opens a ranked view of `game.scores`, highest
+first.
+
+One piece is still open: `GameComponent.lockInGuess()` only sets local UI
+state right now — it has a `TODO` where a `DataService.addGuess(gameId,
+guesserName, guessedName)` call should go once that method exists, so a
+locked-in guess actually reaches the backend's `guesses` list to be scored.
+
+## Leaderboard
+
+`src/app/models/score.model.ts` and `src/app/models/guess.model.ts` mirror
+the `Score`/`Guess` shapes added to `Game`. The `Guess` field names
+(`guesserName`, `guessedName`) are an assumption based on "add_guess takes
+the user's name and the name of the person they're guessing" — rename them
+in `guess.model.ts` (and wherever `addGuess` ends up being called) if your
+backend uses different keys; nothing else depends on their exact names.
 
 ## Taglines
 

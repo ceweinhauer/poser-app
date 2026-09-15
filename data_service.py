@@ -18,13 +18,17 @@ def create_game(name):
     code = generate_alphanumeric().upper()
     players = []
     players.append(name)
+    scores = []
+    scores.append({'name': name, 'score': 0})
     gameObj = {
         'gameId': code,
         'creator': name,
         'currentQuestion': None,
         'askedQuestions': [],
         'newQuestions': [],
-        'players': players
+        'players': players,
+        'scores': scores,
+        'guesses': []
     }
     mongo_service.insertIntoCollection("games", gameObj)
     jsonValue = {'gameId': code}
@@ -41,6 +45,9 @@ def join_game(name, gameId):
     players = game['players']
     players.append(name)
     game['players'] = players
+    scores = game['scores']
+    scores.append({'name': name, 'score': 0})
+    game['scores'] = scores
     query = {'gameId': gameId}
     mongo_service.updateOne("games", game, query)
     return parse_json(game)
@@ -54,7 +61,7 @@ def add_question(questionAsker, questionText, gameId):
         'questionText': questionText,
         'upvotes': 0,
         'downvotes': 0,
-        'answers': []
+        'answers': [],
     }
     if (game['currentQuestion'] == None):
         game['currentQuestion'] = question
@@ -79,18 +86,46 @@ def add_answer(answerName, answerText, gameId):
     mongo_service.updateOne("games", game, query)
     return parse_json(game)
 
+def add_guess(guessName, userName, gameId):
+    query = {'gameId': gameId}
+    game = mongo_service.findOneFromCollection("games", query)
+    guess = {
+        'guessName': guessName,
+        'userName': userName
+    }
+    game['guesses'].append(guess)
+    mongo_service.updateOne("games", game, query)
+    return parse_json(game)
+
 def next_question(gameId):
     query = {'gameId': gameId}
     game = mongo_service.findOneFromCollection("games", query)
     formerQuestion = game['currentQuestion']
     askedQuestions = game['askedQuestions']
     newQuestions = game['newQuestions']
+    scores = game['scores']
+    guesses = game['guesses']
+
+    for score in scores:
+        for answer in formerQuestion['answers']:
+            if answer['answerName'] == score['name']:
+                score['score'] = score['score'] + answer['upvotes']
+
+    for guess in guesses:
+        if guess['guessName'] == formerQuestion['questionAsker']:
+            for score in scores:
+                if guess['userName'] == score['name']:
+                    score['score'] = score['score'] + 1
+
     askedQuestions.append(formerQuestion)
     currentQuestion = random.choice(newQuestions)
     newQuestions.remove(currentQuestion)
+
     game['currentQuestion'] = currentQuestion
     game['askedQuestions'] = askedQuestions
     game['newQuestions'] = newQuestions
+    game['scores'] = scores
+    game['guesses'] = []
     mongo_service.updateOne("games", game, query)
     return parse_json(game)
 

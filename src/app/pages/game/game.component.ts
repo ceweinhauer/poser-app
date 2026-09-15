@@ -7,6 +7,7 @@ import { SessionService } from '../../services/session.service';
 import { Game } from '../../models/game.model';
 import { Question } from '../../models/question.model';
 import { Answer } from '../../models/answer.model';
+import { Score } from '../../models/score.model';
 
 const POLL_INTERVAL_MS = 4000;
 
@@ -26,10 +27,11 @@ export class GameComponent implements OnInit, OnDestroy {
   gameId = '';
   playerName = '';
   isCreator = false;
-  score = 0;
 
   game: Game | null = null;
   loadError = '';
+
+  showLeaderboard = false;
 
   newQuestionText = '';
   isSubmittingQuestion = false;
@@ -77,7 +79,6 @@ export class GameComponent implements OnInit, OnDestroy {
     }
     this.playerName = session.playerName;
     this.isCreator = session.isCreator;
-    this.score = session.score;
 
     this.pollSub = interval(POLL_INTERVAL_MS)
       .pipe(
@@ -99,8 +100,9 @@ export class GameComponent implements OnInit, OnDestroy {
   /**
    * Applies a freshly-fetched game state. If the current question changed
    * since the last update and the player had locked in a guess, this is
-   * where the guess gets scored against the question that just rolled off
-   * into askedQuestions.
+   * where the "correct / not quite" reveal banner gets its answer from.
+   * The authoritative score lives on the backend (Game.scores) - see the
+   * leaderboard.
    */
   private applyGameUpdate(game: Game): void {
     const previousQuestion = this.game?.currentQuestion ?? null;
@@ -115,10 +117,6 @@ export class GameComponent implements OnInit, OnDestroy {
         actualAsker,
         questionText: previousQuestion!.questionText
       };
-      if (this.lastResult.correct) {
-        this.score += 1;
-        this.sessionService.saveScore(this.gameId, this.score);
-      }
     }
 
     if (questionChanged) {
@@ -156,11 +154,28 @@ export class GameComponent implements OnInit, OnDestroy {
     return !!this.game && this.game.newQuestions.length > 0;
   }
 
+  /** Everyone's scores, highest first. */
+  get sortedScores(): Score[] {
+    if (!this.game?.scores) {
+      return [];
+    }
+    return [...this.game.scores].sort((a, b) => b.score - a.score);
+  }
+
+  toggleLeaderboard(): void {
+    this.showLeaderboard = !this.showLeaderboard;
+  }
+
+  closeLeaderboard(): void {
+    this.showLeaderboard = false;
+  }
+
   lockInGuess(): void {
     if (!this.myGuess || this.guessLocked) {
       return;
     }
     this.guessLocked = true;
+    this.dataService.addGuess(this.gameId, this.playerName, this.myGuess).subscribe();
   }
 
   changeGuess(): void {

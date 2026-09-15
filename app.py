@@ -47,6 +47,14 @@ def add_answer():
             game = data_service.add_answer(answerName, answerText, gameId)
             return game
 
+def add_guess(guessName, userName, gameId):
+    if request.method == 'POST':
+        guessName = request.json['guessName']
+        userName = request.json['userName']
+        gameId = request.json['gameId']
+        game = data_service.add_guess(guessName, userName, gameId)
+        return game
+
 @app.route('/games/vote/question', methods=['POST'])
 def vote_question():
     if request.method == 'POST':
@@ -69,6 +77,15 @@ def next_question():
     if request.method == 'POST':
             gameId = request.json['gameId']
             game = data_service.next_question(gameId)
+            return game
+
+@app.route('/games/guess', methods=['POST'])
+def guess():
+    if request.method == 'POST':
+            gameId = request.json['gameId']
+            guessName = request.json['guessName']
+            userName = request.json['userName']
+            game = data_service.add_guess(guessName, userName, gameId)
             return game
 
 if __name__ == '__main__':
